@@ -360,8 +360,8 @@ echo "MinIO Console: http://${MINIO_ROUTE}"
 ```
 
 **Default credentials:**
-- Username: `minioadmin`
-- Password: `minioadmin`
+- Username: `minio`
+- Password: `minio123`
 
 ---
 
