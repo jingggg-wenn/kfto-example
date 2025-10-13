@@ -767,33 +767,7 @@ RuntimeError: CUDA out of memory
 
 See [KFTO-troubleshooting-summary.md](./KFTO-troubleshooting-summary.md) for detailed troubleshooting.
 
----
 
-## 📁 Repository Structure
-
-```
-.
-├── README.md                              # This file
-├── KFTO-troubleshooting-summary.md       # Detailed troubleshooting
-├── REPLICATION-GUIDE.md                  # How to replicate with new data
-├── L40S-DEPLOYMENT-GUIDE.md              # L40S GPU setup guide
-│
-├── machineset-l40s-g6e-2xlarge.yaml     # L40S GPU MachineSet
-├── machineset-l40s-g6e-xlarge.yaml      # L40S budget option
-│
-├── training-config-l40s-optimized.yaml   # Production training config ⭐
-├── training-config-ultra-low-memory.yaml # Low-memory fallback (L4)
-├── training-config-single-gpu.yaml       # Single-GPU config
-│
-├── kfto-demo-pytorchjob-l40s.yaml       # L40S PyTorchJob ⭐
-├── kfto-demo-pytorchjob-optimized.yaml  # L4 PyTorchJob (resilient)
-├── kfto-demo-single-gpu.yaml            # Single-GPU PyTorchJob
-│
-├── deploy-resilient-training.sh          # Deployment automation
-└── monitor-training.sh                   # Monitoring script
-```
-
-**⭐ Key files for L40S deployment**
 
 ---
 
