@@ -1,0 +1,167 @@
+apiVersion: kubeflow.org/v1
+kind: PyTorchJob
+metadata:
+  name: kfto-demo
+spec:
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 1
+      restartPolicy: OnFailure
+      template:
+        spec:
+          # Add tolerations for GPU nodes
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Equal
+              value: "True"
+              effect: NoSchedule
+          # Target L40S nodes specifically
+          nodeSelector:
+            nvidia.com/gpu.present: "true"
+            gpu.type: "l40s"
+          containers:
+            - env:
+                - name: SFT_TRAINER_CONFIG_JSON_PATH
+                  value: /etc/config/config.json
+                - name: SET_NUM_PROCESSES_TO_NUM_GPUS
+                  value: "false"
+                - name: PYTORCH_CUDA_ALLOC_CONF
+                  value: "max_split_size_mb:512"
+                - name: NCCL_DEBUG
+                  value: "INFO"
+                - name: NCCL_IB_DISABLE
+                  value: "1"
+                - name: NCCL_P2P_DISABLE
+                  value: "1"
+                - name: NCCL_SOCKET_TIMEOUT
+                  value: "14400"
+                - name: TORCH_DISTRIBUTED_TIMEOUT
+                  value: "14400"
+                - name: NCCL_HEARTBEAT_TIMEOUT_SEC
+                  value: "14400"
+              image: 'quay.io/jishikaw/fms-hf-tuning:latest'
+              imagePullPolicy: IfNotPresent
+              name: pytorch
+              ports:
+                - containerPort: 29500
+                  name: pytorchjob-port
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+                requests:
+                  memory: "16Gi"
+                  cpu: "4"
+              volumeMounts:
+                - mountPath: /etc/config
+                  name: config-volume
+                - mountPath: /data/input
+                  name: dataset-volume
+                - mountPath: /data/output
+                  name: model-volume
+                - mountPath: /.cache
+                  name: cache-volume
+                - mountPath: "/dev/shm"
+                  name: dshm
+          volumes:
+            - configMap:
+                items:
+                  - key: config.json
+                    path: config.json
+                name: training-config
+              name: config-volume
+            - persistentVolumeClaim:
+                claimName: dataset-volume
+              name: dataset-volume
+            - name: model-volume
+              persistentVolumeClaim:
+                claimName: model-volume
+            - name: cache-volume
+              persistentVolumeClaim:
+                claimName: cache-volume
+            - name: dshm
+              emptyDir:
+                medium: Memory
+                sizeLimit: "8Gi"
+    Worker:
+      replicas: 1
+      restartPolicy: OnFailure
+      template:
+        spec:
+          # Add tolerations for GPU nodes
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Equal
+              value: "True"
+              effect: NoSchedule
+          # Target L40S nodes specifically
+          nodeSelector:
+            nvidia.com/gpu.present: "true"
+            gpu.type: "l40s"
+          containers:
+            - env:
+                - name: SFT_TRAINER_CONFIG_JSON_PATH
+                  value: /etc/config/config.json
+                - name: SET_NUM_PROCESSES_TO_NUM_GPUS
+                  value: "false"
+                - name: PYTORCH_CUDA_ALLOC_CONF
+                  value: "max_split_size_mb:512"
+                - name: NCCL_DEBUG
+                  value: "INFO"
+                - name: NCCL_IB_DISABLE
+                  value: "1"
+                - name: NCCL_P2P_DISABLE
+                  value: "1"
+                - name: NCCL_SOCKET_TIMEOUT
+                  value: "14400"
+                - name: TORCH_DISTRIBUTED_TIMEOUT
+                  value: "14400"
+                - name: NCCL_HEARTBEAT_TIMEOUT_SEC
+                  value: "14400"
+              image: 'quay.io/jishikaw/fms-hf-tuning:latest'
+              imagePullPolicy: IfNotPresent
+              name: pytorch
+              ports:
+                - containerPort: 29500
+                  name: pytorchjob-port
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
+                requests:
+                  memory: "16Gi"
+                  cpu: "4"
+              volumeMounts:
+                - mountPath: /etc/config
+                  name: config-volume
+                - mountPath: /data/input
+                  name: dataset-volume
+                - mountPath: /data/output
+                  name: model-volume
+                - mountPath: /.cache
+                  name: cache-volume
+                - mountPath: "/dev/shm"
+                  name: dshm
+          volumes:
+            - configMap:
+                items:
+                  - key: config.json
+                    path: config.json
+                name: training-config
+              name: config-volume
+            - persistentVolumeClaim:
+                claimName: dataset-volume
+              name: dataset-volume
+            - name: model-volume
+              persistentVolumeClaim:
+                claimName: model-volume
+            - name: cache-volume
+              persistentVolumeClaim:
+                claimName: cache-volume
+            - name: dshm
+              emptyDir:
+                medium: Memory
+                sizeLimit: "8Gi"
+  runPolicy:
+    suspend: false
+    backoffLimit: 5
+    cleanPodPolicy: None
+
