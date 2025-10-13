@@ -1,0 +1,100 @@
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  annotations:
+    capacity.cluster-autoscaler.kubernetes.io/labels: kubernetes.io/arch=amd64
+    machine.openshift.io/GPU: '1'
+    machine.openshift.io/memoryMb: '32768'  # 32GB RAM (doubled from 16GB)
+    machine.openshift.io/vCPU: '8'  # 8 vCPUs (doubled from 4)
+  name: cluster-69mrd-b5lcj-worker-gpu-l40s-us-east-2a  # Changed to l40s
+  namespace: openshift-machine-api
+  labels:
+    agnosticd.redhat.com/machineset-group: worker-gpu-l40s  # Changed to l40s
+    machine.openshift.io/cluster-api-cluster: cluster-69mrd-b5lcj
+spec:
+  replicas: 1  # Start with 1 for testing, scale up later
+  selector:
+    matchLabels:
+      machine.openshift.io/cluster-api-cluster: cluster-69mrd-b5lcj
+      machine.openshift.io/cluster-api-machine-role: worker-gpu-l40s
+      machine.openshift.io/cluster-api-machine-type: worker-gpu-l40s
+      machine.openshift.io/cluster-api-machineset: cluster-69mrd-b5lcj-worker-gpu-l40s-us-east-2a
+  template:
+    metadata:
+      labels:
+        agnosticd.redhat.com/machineset-group: worker-gpu-l40s
+        machine.openshift.io/cluster-api-cluster: cluster-69mrd-b5lcj
+        machine.openshift.io/cluster-api-machine-role: worker-gpu-l40s
+        machine.openshift.io/cluster-api-machine-type: worker-gpu-l40s
+        machine.openshift.io/cluster-api-machineset: cluster-69mrd-b5lcj-worker-gpu-l40s-us-east-2a
+    spec:
+      lifecycleHooks: {}
+      metadata:
+        labels:
+          node-role.kubernetes.io/worker-gpu: ''
+          nvidia.com/gpu.present: 'true'
+          gpu.type: 'l40s'  # Added for easy identification
+      providerSpec:
+        value:
+          userDataSecret:
+            name: worker-user-data
+          placement:
+            availabilityZone: us-east-2a
+            region: us-east-2
+          credentialsSecret:
+            name: aws-cloud-credentials
+          capacityReservationId: ''
+          instanceType: g6e.2xlarge  # Changed from g6.xlarge to g6e.2xlarge (L40S)
+          metadata:
+            creationTimestamp: null
+          blockDevices:
+            - ebs:
+                iops: 0
+                kmsKey: {}
+                volumeSize: 250
+                volumeType: gp3  # Changed to gp3 for better performance
+          securityGroups:
+            - filters:
+                - name: 'tag:Name'
+                  values:
+                    - cluster-69mrd-b5lcj-node
+            - filters:
+                - name: 'tag:Name'
+                  values:
+                    - cluster-69mrd-b5lcj-lb
+          kind: AWSMachineProviderConfig
+          metadataServiceOptions: {}
+          tags:
+            - name: kubernetes.io/cluster/cluster-69mrd-b5lcj
+              value: owned
+            - name: Stack
+              value: ocp4-cluster-69mrd
+            - name: env_type
+              value: ocp4-cluster
+            - name: guid
+              value: 69mrd
+            - name: owner
+              value: unknown
+            - name: platform
+              value: rhpds
+            - name: uuid
+              value: 97b443d3-9401-53d3-be59-69a617e8aaac
+            - name: gpu-type
+              value: l40s  # Added tag for identification
+          deviceIndex: 0
+          ami:
+            id: ami-078e26f293629fe91  # Same AMI (already has GPU drivers)
+          subnet:
+            filters:
+              - name: 'tag:Name'
+                values:
+                  - cluster-69mrd-b5lcj-subnet-private-us-east-2a
+          apiVersion: machine.openshift.io/v1beta1
+          iamInstanceProfile:
+            id: cluster-69mrd-b5lcj-worker-profile
+      taints:
+        - effect: NoSchedule
+          key: nvidia.com/gpu
+          value: 'True'
+
+
