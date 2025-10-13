@@ -1,0 +1,62 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: training-config
+data:
+  config.json: |
+    {
+      "accelerate_launch_args": {
+            "main_process_ip": "kfto-demo-master-0",
+            "main_process_port": 29500,
+            "num_processes": 2,
+            "num_machines": 2,
+            "machine_rank": 0,
+            "mixed_precision": "bf16",
+            "use_fsdp": "true",
+            "fsdp_sharding_strategy": 4,
+            "rdzv_backend": "c10d",
+            "rdzv_conf": "timeout=14400",
+            "max_restarts": 3,
+            "monitor_interval": 30
+        },
+      "model_name_or_path": "Qwen/Qwen2.5-7B-Instruct",
+      "training_data_path": "/data/input/train-00000-of-00001.parquet",
+      "output_dir": "/data/output/tuning/qwen2.5-l40s-tuning",
+      "save_model_dir": "/data/output/model",
+      "resume_from_checkpoint": "True",
+      "num_train_epochs": 3,
+      "per_device_train_batch_size": 4,
+      "per_device_eval_batch_size": 4,
+      "gradient_accumulation_steps": 16,
+      "packing": "True",
+      "gradient_checkpointing": "True",
+      "save_strategy": "steps",
+      "save_steps": 5,
+      "save_total_limit": 3,
+      "load_best_model_at_end": false,
+      "learning_rate": 2e-05,
+      "lr_scheduler_type": "cosine",
+      "include_tokens_per_second": true,
+      "data_formatter_template": "### Question:\n{{question}}\n\n### Answer:\n{{answer}}<|im_end|>",
+      "response_template": "### Answer:\n",
+      "logging_strategy": "steps",
+      "logging_steps": 0.2,
+      "neftune_noise_alpha": 5,
+      "use_flash_attn": true,
+      "use_liger_kernel": "True",
+      "peft_method": "lora",
+      "r": 32,
+      "lora_alpha": 64,
+      "lora_dropout": 0.05,
+      "bias": "none",
+      "target_modules": ["all-linear"],
+      "lora_post_process_for_vllm": true,
+      "trackers": ["aim"],
+      "experiment": "qwen-l40s-optimized",
+      "aim_remote_server_ip": "aim.aim.svc.cluster.local",
+      "aim_remote_server_port": "53800",
+      "fsdp_timeout": 14400,
+      "torch_distributed_timeout": 14400
+    }
+
+
