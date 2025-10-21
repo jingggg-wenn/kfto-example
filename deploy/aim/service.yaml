@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: aim
+  namespace: aim
+  labels:
+    app: aim
+spec:
+  ports:
+    - name: 43800-tcp
+      protocol: TCP
+      port: 43800
+      targetPort: 43800
+    - name: 53800-tcp
+      protocol: TCP
+      port: 53800
+      targetPort: 53800
+  type: ClusterIP
+  selector:
+    app: aim
+    deployment: aim

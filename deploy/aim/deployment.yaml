@@ -1,0 +1,32 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: aim
+  namespace: aim
+  labels:
+    app: aim
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aim
+  template:
+    metadata:
+      labels:
+        app: aim
+        deployment: aim
+    spec:
+      containers:
+        - name: aim
+          image: 'docker.io/aimstack/aim:latest'
+          command:
+            - /bin/sh
+            - '-c'
+          args:
+            - aim server & aim up --host 0.0.0.0
+          ports:
+            - containerPort: 43800
+              protocol: TCP
+            - containerPort: 53800
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
